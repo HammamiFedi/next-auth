@@ -25,6 +25,7 @@ export default function RegisterForm() {
     defaultValues: {
       email: "",
       password: "",
+      name: "",
     },
   });
 
@@ -36,6 +37,7 @@ export default function RegisterForm() {
       register(values).then((data) => {
         setError(data.error);
         setSuccess(data.success);
+        registerForm.reset();
       });
     });
   };
