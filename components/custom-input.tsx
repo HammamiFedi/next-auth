@@ -40,7 +40,9 @@ export default function CustomInput<T extends FieldValues>({
               disabled={disabled}
             />
           </FormControl>
-          <FormMessage>{fieldState.error?.message}</FormMessage>
+          <FormMessage className="ml-4">
+            {fieldState.error?.message}
+          </FormMessage>
         </FormItem>
       )}
     />
