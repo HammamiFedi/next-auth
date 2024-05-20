@@ -1,26 +1,23 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import CardWrapper from "@/components/auth/card-wrapper";
 import FormError from "@/components/form-error";
 import FormSuccess from "@/components/form-success";
-import { Input } from "@/components/ui/input";
+import CustomInput from "@/components/custom-input";
+import CardWrapper from "@/components/auth/card-wrapper";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormLabel,
-  FormItem,
-  FormField,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { LogionSchema } from "@/schemas";
 import { LogionSchemaType } from "@/types";
-import CustomInput from "../custom-input";
+import { login } from "@/actions/auth";
 
 export default function LoginForm() {
+  const [error, setError] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
+  const [isPending, startTransition] = useTransition();
   const loginForm = useForm<LogionSchemaType>({
     mode: "onChange",
     resolver: zodResolver(LogionSchema),
@@ -31,7 +28,15 @@ export default function LoginForm() {
   });
 
   const onSubmit = (values: LogionSchemaType) => {
-    console.log(values);
+    setError("");
+    setSuccess("");
+
+    startTransition(() => {
+      login(values).then((data) => {
+        setError(data.error);
+        setSuccess(data.success);
+      });
+    });
   };
 
   return (
@@ -45,21 +50,25 @@ export default function LoginForm() {
         <form className="space-y-6" onSubmit={loginForm.handleSubmit(onSubmit)}>
           <div className="space-y-4">
             <CustomInput<LogionSchemaType>
-              control={loginForm.control}
-              type="email"
-              placeholder="john.doe@gmail.com"
               name="email"
+              type="email"
+              label="Email"
+              placeholder="john.doe@gmail.com"
+              control={loginForm.control}
+              disabled={isPending}
             />
             <CustomInput<LogionSchemaType>
               name="password"
-              control={loginForm.control}
-              placeholder="*** *** **"
               type="password"
+              label="Password"
+              placeholder="*** *** **"
+              control={loginForm.control}
+              disabled={isPending}
             />
           </div>
-          <FormError message="Invalid Credentials" />
-          <FormSuccess message="Email has been sent" />
-          <Button type="submit" className="w-full">
+          <FormError message={error} />
+          <FormSuccess message={success} />
+          <Button className="w-full" type="submit" disabled={isPending}>
             Login
           </Button>
         </form>
