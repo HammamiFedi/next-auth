@@ -1,11 +1,14 @@
 "use server";
 
 import bcrypt from "bcryptjs";
+import { AuthError } from "next-auth";
 
 import { db } from "@/lib/db";
 import { LogionSchema, RegisterSchema } from "@/schemas";
 import { LogionSchemaType, RegisterSchemaType } from "@/types";
 import { getUserByEmail } from "@/lib/server-utils";
+import { signIn } from "@/auth";
+import { DEFAULT_LOGIN_REDIRECT } from "@/config/constants/routes";
 
 export const login = async (values: LogionSchemaType) => {
   const validatedFields = LogionSchema.safeParse(values);
@@ -14,7 +17,28 @@ export const login = async (values: LogionSchemaType) => {
     return { error: "Invalid fields." };
   }
 
-  return { success: "Email has been sent." };
+  const { email, password } = validatedFields.data;
+
+  try {
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo: DEFAULT_LOGIN_REDIRECT,
+    });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case "CredentialsSignin":
+          return { error: "Invalid credentials." };
+        default:
+          return { error: "Something went wrong." };
+      }
+    }
+
+    // Next.js "redirects" throw an error, so we need to throw it again
+    // Throw the error back to redirect you in case of successful login
+    throw error;
+  }
 };
 
 export const register = async (values: RegisterSchemaType) => {

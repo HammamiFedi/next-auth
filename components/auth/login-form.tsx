@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import FormError from "@/components/form-error";
-import FormSuccess from "@/components/form-success";
 import CustomInput from "@/components/custom-input";
 import CardWrapper from "@/components/auth/card-wrapper";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,6 @@ import { login } from "@/actions/auth";
 
 export default function LoginForm() {
   const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const loginForm = useForm<LogionSchemaType>({
     mode: "onChange",
@@ -29,12 +27,10 @@ export default function LoginForm() {
 
   const onSubmit = (values: LogionSchemaType) => {
     setError("");
-    setSuccess("");
 
     startTransition(() => {
       login(values).then((data) => {
-        setError(data.error);
-        setSuccess(data.success);
+        setError(data?.error);
       });
     });
   };
@@ -67,7 +63,6 @@ export default function LoginForm() {
             />
           </div>
           <FormError message={error} />
-          <FormSuccess message={success} />
           <Button className="w-full" type="submit" disabled={isPending}>
             Login
           </Button>
