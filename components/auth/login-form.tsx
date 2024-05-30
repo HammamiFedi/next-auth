@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSearchParams } from "next/navigation";
 
 import FormError from "@/components/form-error";
 import CustomInput from "@/components/custom-input";
@@ -14,6 +15,12 @@ import { LogionSchemaType } from "@/types";
 import { login } from "@/actions/auth";
 
 export default function LoginForm() {
+  const searchParams = useSearchParams();
+  const urlError =
+    searchParams.get("error") === "OAuthAccountNotLinked"
+      ? "Email is already in use with different provider."
+      : "";
+
   const [error, setError] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const loginForm = useForm<LogionSchemaType>({
@@ -62,7 +69,7 @@ export default function LoginForm() {
               disabled={isPending}
             />
           </div>
-          <FormError message={error} />
+          <FormError message={error || urlError} />
           <Button className="w-full" type="submit" disabled={isPending}>
             Login
           </Button>
